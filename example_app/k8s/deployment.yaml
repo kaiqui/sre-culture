@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: fastapi-container
-        image: fastapi-app:latest
+        image: kailima/fastapi-app:latest
         ports:
         - containerPort: 8000
         - containerPort: 8001
