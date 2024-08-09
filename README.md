@@ -1,6 +1,4 @@
-Aqui está a documentação reestruturada, sem menção ao OpenTelemetry:
-
-# Canary Deploy e Four Golden Signals
+# Canary Deploy e Four Golden Signals: SRE Culture
 
 ## Integração do ArgoCD com Minikube
 
