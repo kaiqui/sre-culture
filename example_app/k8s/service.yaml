@@ -11,5 +11,5 @@ spec:
       targetPort: 8000
     - protocol: TCP
       port: 8001
-      targetPort: 8001  # Porta para métricas Prometheus
+      targetPort: 8001
   type: LoadBalancer
