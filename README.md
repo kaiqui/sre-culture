@@ -314,9 +314,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: my
-
--app-canary
+  name: my-app-canary
   namespace: default
 spec:
   selector:
