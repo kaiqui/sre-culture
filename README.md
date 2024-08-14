@@ -1,4 +1,4 @@
-# Canary Deploy e Four Golden Signals: SRE Culture
+# Canary Deploy e Observalibilidaed: SRE Culture
 
 ## Integração do ArgoCD com Minikube
 
@@ -172,16 +172,68 @@ helm install grafana grafana/grafana --namespace monitoring
 4. Configure a URL como `http://prometheus-server.monitoring.svc.cluster.local:80`.
 5. Clique em **Save & Test** para verificar a conexão.
 
-### 7. **Criar Dashboards para Monitorar os Four Golden Signals**
+### 7. **Deploy da Aplicação no ArgoCD**
+
+### Passo 1: Acessar o ArgoCD
+1. **Abra o navegador** e acesse a interface web do ArgoCD. Geralmente, ela estará disponível no endereço fornecido pelo seu administrador, como `http://<argocd-url>`.
+
+2. **Faça login** com suas credenciais. Se você não sabe o usuário e senha, entre em contato com o administrador ou utilize os comandos para obter as credenciais (ex: via `kubectl`).
+
+### Passo 2: Criar um Novo Aplicativo
+1. **No painel principal do ArgoCD**, clique em "New App" para criar um novo aplicativo.
+
+### Passo 3: Configurar o Aplicativo
+1. **Preencha os detalhes do aplicativo**:
+    - **Application Name**: Escolha um nome para o seu aplicativo, por exemplo, `fastapi-app`.
+    - **Project**: Selecione o projeto no qual o aplicativo será criado (geralmente `default` se você não tiver projetos específicos).
+    - **Sync Policy**: Deixe como `Manual` se quiser controlar os deploys ou `Automatic` para que o ArgoCD sincronize automaticamente.
+
+2. **Configurar a origem do código**:
+    - **Repository URL**: Insira a URL do repositório Git onde seu código e os manifests YAML estão armazenados.
+    - **Revision**: Especifique o branch ou tag que você deseja implantar (por exemplo, `main`).
+    - **Path**: Insira o caminho dentro do repositório onde os manifests estão localizados (por exemplo, `/k8s` se os arquivos estão em uma pasta `k8s`).
+
+3. **Definir o cluster e o namespace**:
+    - **Cluster URL**: Deixe o valor padrão para o cluster atual ou selecione o cluster onde deseja implantar.
+    - **Namespace**: Especifique o namespace Kubernetes onde o aplicativo será implantado (ex: `default`).
+
+4. **Configurar as opções de sincronização**:
+    - **Directory Recurse**: Marque essa opção se o path contém subdiretórios que devem ser incluídos.
+    - **Prune Resources**: Ative essa opção se você deseja que o ArgoCD remova os recursos que foram deletados do repositório Git.
+  
+5. **Configurar opções de parâmetros (opcional)**:
+    - Você pode adicionar `Helm Values` ou parâmetros específicos de configuração aqui, se estiver usando um repositório Helm.
+
+### Passo 4: Revisar e Criar o Aplicativo
+1. **Revise as configurações** para garantir que todos os parâmetros estejam corretos.
+
+2. **Clique em "Create"** para criar o aplicativo. Isso o levará para a página de detalhes do aplicativo.
+
+### Passo 5: Sincronizar o Aplicativo
+1. **Na página de detalhes do aplicativo**, você verá o estado do aplicativo e os recursos que ele contém.
+
+2. **Clique em "Sync"** para sincronizar o estado do cluster com o repositório Git. Isso iniciará o processo de deploy.
+
+3. **Acompanhe o progresso** na interface. Você verá o status dos pods, serviços e outros recursos sendo criados.
+
+### Passo 6: Verificar o Deploy
+1. **Após a sincronização**, verifique o status dos recursos para garantir que tudo foi implantado corretamente.
+    - Verde significa que o recurso está sincronizado e saudável.
+    - Vermelho ou amarelo pode indicar um problema que precisa ser investigado.
+
+2. **Teste a aplicação** acessando o serviço exposto (se aplicável) para garantir que ela esteja funcionando como esperado.
+
+
+### 8. **Criar Dashboards para Monitorar os Four Golden Signals da Aplicação deste Repositório**
 
 Agora que o Grafana está conectado ao Prometheus, você pode criar dashboards para monitorar os "Four Golden Signals":
 
 1. **Latência**:
-   - Query: `histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="my-app"}[5m])) by (le))`
+   - Query: `histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="fastapi-metrics"}[5m])) by (le))`
 2. **Tráfego**:
-   - Query: `sum(rate(http_requests_total{job="my-app"}[5m])) by (job)`
+   - Query: `sum(rate(http_requests_total{job="fastapi-metrics"}[5m])) by (job)`
 3. **Erros**:
-   - Query: `sum(rate(http_requests_total{job="my-app", status=~"5.."}[5m])) by (job)`
+   - Query: `sum by(job) (rate(http_requests_errors_total {job="fastapi-metrics"}[5m]))`
 4. **Saturação**:
    - Query: `sum(rate(container_cpu_usage_seconds_total{namespace="default"}[5m])) by (pod)`
 
